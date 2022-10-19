@@ -22,3 +22,34 @@ class LoginView(TemplateView):
     
 class NewsView(TemplateView):
     template_name = 'mainapp/news.html'
+    
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        context_data['object_list'] = [
+            {
+                'title': 'Новость раз',
+                'preview': 'Прквью для новости раз',
+                'date': '2022-01-01'
+            },{
+                'title': 'Новость два',
+                'preview': 'Прквью для новости два',
+                'date': '2022-01-01'
+            },{
+                'title': 'Новость три',
+                'preview': 'Прквью для новости три',
+                'date': '2022-01-01'
+            },{
+                'title': 'Новость четыре',
+                'preview': 'Прквью для новости четыре',
+                'date': '2022-01-01'
+            },{
+                'title': 'Новость пять',
+                'preview': 'Прквью для новости пять',
+                'date': '2022-01-01'
+            },{
+                'title': 'Новость шесть',
+                'preview': 'Прквью для новости шесть',
+                'date': '2022-01-01'
+            }
+        ]
+        return context_data
