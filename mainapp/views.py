@@ -1,7 +1,9 @@
 # from django.shortcuts import render
+from multiprocessing import context
 from tempfile import template
 from django.http import HttpResponse
 from django.views.generic import TemplateView
+from datetime import datetime
 
 # Create your views here.
 
@@ -29,27 +31,35 @@ class NewsView(TemplateView):
             {
                 'title': 'Новость раз',
                 'preview': 'Прквью для новости раз',
-                'date': '2022-01-01'
+                'date': datetime.now()
             },{
                 'title': 'Новость два',
                 'preview': 'Прквью для новости два',
-                'date': '2022-01-01'
+                'date': datetime.now()
             },{
                 'title': 'Новость три',
                 'preview': 'Прквью для новости три',
-                'date': '2022-01-01'
+                'date': datetime.now()
             },{
                 'title': 'Новость четыре',
                 'preview': 'Прквью для новости четыре',
-                'date': '2022-01-01'
+                'date': datetime.now()
             },{
                 'title': 'Новость пять',
                 'preview': 'Прквью для новости пять',
-                'date': '2022-01-01'
+                'date': datetime.now()
             },{
                 'title': 'Новость шесть',
                 'preview': 'Прквью для новости шесть',
-                'date': '2022-01-01'
+                'date': datetime.now()
             }
         ]
+        context_data['range'] = range(1, 5)
         return context_data
+    
+    
+class NewsWithPaginatorView(NewsView):
+    def get_context_data(self, page, **kwargs):
+        context = super().get_context_data(page=page, **kwargs)
+        context["page_num"] = page
+        return context

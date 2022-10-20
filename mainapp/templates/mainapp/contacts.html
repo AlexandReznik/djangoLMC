@@ -1,5 +1,5 @@
 {% extends 'mainapp/base.html' %}
-
+{% load link_to_email %}
 {% block content%}
 <p>
 <div class="jumbotron jumbotron-fluid">
@@ -24,7 +24,7 @@
         </ul>
         <ul class="list-unstyled">
           <li>Email</li>
-          <li><strong>geeklab@spb.ru</strong></li>
+          <li><strong>{{ 'barin@gmail.com'|link_to_email }}</strong></li>
         </ul>
         <ul class="list-unstyled">
           <li>Адрес</li>
@@ -47,7 +47,7 @@
         </ul>
         <ul class="list-unstyled">
           <li>Email</li>
-          <li><strong>geeklab@kz.ru</strong></li>
+          <li><strong>{{ 'barin@gmail.com'|link_to_email }}</strong></li>
         </ul>
         <ul class="list-unstyled">
           <li>Адрес</li>
@@ -70,7 +70,7 @@
         </ul>
         <ul class="list-unstyled">
           <li>Email</li>
-          <li><strong>geeklab@msk.ru</strong></li>
+          <li><strong>{{ 'barin@gmail.com'|link_to_email }}</strong></li>
         </ul>
         <ul class="list-unstyled">
           <li>Адрес</li>
