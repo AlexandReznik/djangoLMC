@@ -1,5 +1,6 @@
 {% extends 'mainapp/base.html' %}
-{% load static crispy_forms_tags %}
+{% load static crispy_forms_tags cache %}
+{% cache 300 lessons %}
 {% block title %}
 {{ course_object.name }}
 {% endblock title %}
@@ -105,3 +106,4 @@ $(document).ready(function () {
         });
 </script>
 {% endblock js %}
+{% endcache %}
