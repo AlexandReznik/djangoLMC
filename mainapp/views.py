@@ -1,4 +1,3 @@
-# from django.shortcuts import render
 from multiprocessing import context
 from tempfile import template
 from django.http import HttpResponse
@@ -7,10 +6,12 @@ from datetime import datetime
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
+from django.core.cache import cache
 from django.contrib.auth.mixins import (
 LoginRequiredMixin,
 PermissionRequiredMixin,
 )
+import logging
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.views.generic import (
@@ -23,6 +24,7 @@ UpdateView,
 )
 from mainapp import models as mainapp_models
 from mainapp import forms
+# from mainapp import tasks as mainapp_tasks
 
 
 class MainPageView(TemplateView):
@@ -32,7 +34,8 @@ class MainPageView(TemplateView):
 class NewsListView(ListView):
     template_name = 'mainapp/news_list.html'
     model = mainapp_models.News
-    paginate_by = 5
+    paginate_by = 2
+
     def get_queryset(self):
         return super().get_queryset().filter(deleted=False)
 
@@ -68,35 +71,11 @@ class NewsDeleteView(PermissionRequiredMixin, DeleteView):
 
 class CourseListView(TemplateView):
     template_name = "mainapp/courses_list.html"
+    paginate_by = 3
 
     def get_context_data(self, **kwargs):
         context = super(CourseListView, self).get_context_data(**kwargs)
         context["objects"] = mainapp_models.Courses.objects.all()[:7]
-        return context
-
-
-class CourseDetailView(TemplateView):
-    template_name = "mainapp/courses_detail.html"
-
-    def get_context_data(self, pk=None, **kwargs):
-        context = super(CourseDetailView, self).get_context_data(**kwargs)
-        context["course_object"] = get_object_or_404(
-            mainapp_models.Courses, pk=pk
-        )
-        context["lessons"] = mainapp_models.Lesson.objects.filter(
-            course=context["course_object"]
-        )
-        context["teachers"] = mainapp_models.CourseTeacher.objects.filter(
-            courses=context["course_object"]
-        )
-        context["feedback_list"] = mainapp_models.CourseFeedback.objects.filter(
-            course=context["course_object"]).order_by("-created", "-rating")[:5]
-        if not self.request.user.is_anonymous:
-            if not mainapp_models.CourseFeedback.objects.filter(
-                course=context["course_object"], user=self.request.user).count():
-                context["feedback_form"] = forms.CourseFeedbackForm(
-                    course=context["course_object"], user=self.request.user)
-        
         return context
 
 
@@ -112,8 +91,43 @@ class CourseFeedbackFormProcessView(LoginRequiredMixin, CreateView):
         return JsonResponse({"card": rendered_card})
 
 
-# class ContactsPageView(TemplateView):
-#     template_name = "mainapp/contacts.html"
+class CourseDetailView(TemplateView):
+    template_name = "mainapp/courses_detail.html"
+
+    def get_context_data(self, pk=None, **kwargs):
+        logging.debug("Yet another log message")
+        context = super(CourseDetailView, self).get_context_data(**kwargs)
+        context["courses_object"] = get_object_or_404(mainapp_models.Courses, pk=pk)
+        context["lessons"] = mainapp_models.Lesson.objects.filter(course=context["courses_object"])
+        context["teachers"] = mainapp_models.CourseTeacher.objects.filter(courses=context["courses_object"])
+        if not self.request.user.is_anonymous:
+            if not mainapp_models.CourseFeedback.objects.filter(
+                course=context["courses_object"], user=self.request.user
+            ).count():
+                context["feedback_form"] = forms.CourseFeedbackForm(
+                    course=context["courses_object"], user=self.request.user
+                )
+
+        cached_feedback = cache.get(f"feedback_list_{pk}")
+        if not cached_feedback:
+            context["feedback_list"] = (
+                mainapp_models.CourseFeedback.objects.filter(course=context["courses_object"])
+                .order_by("-created", "-rating")[:5]
+                .select_related()
+            )
+            cache.set(f"feedback_list_{pk}", context["feedback_list"], timeout=300)  # 5 minutes
+
+            # Archive object for tests --->
+            import pickle
+
+            with open(f"mainapp/fixtures/006_feedback_list_{pk}.bin", "wb") as outf:
+                pickle.dump(context["feedback_list"], outf)
+            # <--- Archive object for tests
+
+        else:
+            context["feedback_list"] = cached_feedback
+
+        return context
 
 
 class DocSitePageView(TemplateView):
@@ -124,56 +138,3 @@ class ContactsView(TemplateView):
     template_name = 'mainapp/contacts.html'
 
 
-# class CoursesView(TemplateView):
-#     template_name = 'mainapp/courses_list.html'
-
-
-# class DocsView(TemplateView):
-#     template_name = 'mainapp/doc_site.html'
-
-
-# class IndexView(TemplateView):
-#     template_name = 'mainapp/index.html'
-
-
-# class NewsView(TemplateView):
-#     template_name = 'mainapp/news.html'
-
-#     def get_context_data(self, **kwargs):
-#         context_data = super().get_context_data(**kwargs)
-#         context_data['object_list'] = [
-#             {
-#                 'title': 'Новость раз',
-#                 'preview': 'Прквью для новости раз',
-#                 'date': datetime.now()
-#             }, {
-#                 'title': 'Новость два',
-#                 'preview': 'Прквью для новости два',
-#                 'date': datetime.now()
-#             }, {
-#                 'title': 'Новость три',
-#                 'preview': 'Прквью для новости три',
-#                 'date': datetime.now()
-#             }, {
-#                 'title': 'Новость четыре',
-#                 'preview': 'Прквью для новости четыре',
-#                 'date': datetime.now()
-#             }, {
-#                 'title': 'Новость пять',
-#                 'preview': 'Прквью для новости пять',
-#                 'date': datetime.now()
-#             }, {
-#                 'title': 'Новость шесть',
-#                 'preview': 'Прквью для новости шесть',
-#                 'date': datetime.now()
-#             }
-#         ]
-#         context_data['range'] = range(1, 5)
-#         return context_data
-
-
-# class NewsWithPaginatorView(NewsView):
-#     def get_context_data(self, page, **kwargs):
-#         context = super().get_context_data(page=page, **kwargs)
-#         context["page_num"] = page
-#         return context

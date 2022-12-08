@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -157,3 +158,7 @@ SOCIAL_AUTH_GITHUB_KEY = 'ac196c9167f3b6a7a521'
 SOCIAL_AUTH_GITHUB_SECRET = 'e8ee1b9e65a55cd1cd250d4576fbf0a32f54fce9'
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
+
+LOCALE_PATHS = [BASE_DIR / "locale"]
+
+SELENIUM_DRIVER_PATH_FF = BASE_DIR / "var" / "selenium" / "geckodriver"
