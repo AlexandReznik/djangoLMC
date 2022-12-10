@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'authapp',
     'social_django',
     'crispy_forms',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -157,3 +159,92 @@ SOCIAL_AUTH_GITHUB_KEY = 'ac196c9167f3b6a7a521'
 SOCIAL_AUTH_GITHUB_SECRET = 'e8ee1b9e65a55cd1cd250d4576fbf0a32f54fce9'
 
 CRISPY_TEMPLATE_PACK = "bootstrap4"
+
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#     "console": {
+#         "format": "[%(asctime)s] %(levelname)s %(name)s (%(lineno)d) %(message)s"},
+#     },
+#     "handlers": {
+#         "console": {"class": "logging.StreamHandler", "formatter": "console"},
+#     },
+#     "loggers": {
+#         "django": {"level": "INFO", "handlers": ["console"]},
+#     },
+# }
+
+LOG_FILE = BASE_DIR / "var" / "log" / "main_log.log"
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "console": {
+#             "format": "[%(asctime)s] %(levelname)s %(name)s (%(lineno)d) %(message)s"
+#         },
+#     },
+#     "handlers": {
+#         "file": {
+#             "level": "INFO",
+#             "class": "logging.FileHandler",
+#             "filename": LOG_FILE,
+#             "formatter": "console",
+#         },
+#         "console": {"class": "logging.StreamHandler", "formatter": "console"},
+#     },
+#     "loggers": {
+#         "django": {"level": "INFO", "handlers": ["file", "console"]},
+#     },
+# }
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "console": {
+            "format": "[%(asctime)s] %(levelname)s %(name)s (%(lineno)d) %(message)s"
+        },
+    },
+    "handlers": {
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": LOG_FILE,
+            "formatter": "console",
+    },
+        "console": {"class": "logging.StreamHandler", "formatter": "console"},
+    },
+    "loggers": {
+        "django": {"level": "INFO", "handlers": ["file", "console"]},
+        # "mainapp": {
+        #     "level": "DEBUG",
+        #     "handlers": ["file"],
+        # },
+    },
+}
+
+
+ALLOWED_HOSTS = ["*"]
+if DEBUG:
+    INTERNAL_IPS = [
+        "192.168.1.4",
+        "127.0.0.1",
+        ]
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
+CELERY_BROKER_URL = "redis://localhost:6379"
+CELERY_RESULT_BACKEND = "redis://localhost:6379"
+
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_FILE_PATH = "var/email-messages/"
